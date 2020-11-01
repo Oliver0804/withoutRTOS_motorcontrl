@@ -159,6 +159,7 @@ int detection_load(int time, int th) {
 			keep_adc1 = real_adc1;
 			return 1;
 		} else {
+			keep_adc2 = real_adc1;
 			return 0;
 		}
 	}
@@ -167,35 +168,39 @@ int detection_load(int time, int th) {
 void Display() {
 	ssd1306_Fill(Black);
 	ssd1306_SetCursor(2, 0);
-	snprintf(buff, sizeof(buff), "System steta:%d,%d", sysinfo_State, stage);
+	snprintf(buff, sizeof(buff), "%s,%s", __DATE__, __TIME__);
+	ssd1306_WriteString(buff, Font_6x8, White);
+
+	ssd1306_SetCursor(2, 8*1);
+	snprintf(buff, sizeof(buff), "steta:%d,%d", sysinfo_State, stage);
 	ssd1306_WriteString(buff, Font_6x8, White);
 
 	snprintf(buff, sizeof(buff), "[B0]:%d,KA1:%d", real_adc1, keep_adc1);
-	ssd1306_SetCursor(2, 0 + 8);
+	ssd1306_SetCursor(2,8*2);
 	ssd1306_WriteString(buff, Font_6x8, White);
 
 	snprintf(buff, sizeof(buff), "[A7]:%d,KA2:%d", real_adc2, keep_adc2);
-	ssd1306_SetCursor(2, 0 + 16);
+	ssd1306_SetCursor(2, 8*3);
 	ssd1306_WriteString(buff, Font_6x8, White);
 
 	snprintf(buff, sizeof(buff), "PWM1:%d, GPIO1:%d", PWM1, OUTPUT_1_State);
-	ssd1306_SetCursor(2, 0 + 24);
+	ssd1306_SetCursor(2, 8*4);
 	ssd1306_WriteString(buff, Font_6x8, White);
 	snprintf(buff, sizeof(buff), "PWM2:%d, GPIO2:%d", PWM2, OUTPUT_2_State);
-	ssd1306_SetCursor(2, 0 + 32);
+	ssd1306_SetCursor(2, 8*5);
 	ssd1306_WriteString(buff, Font_6x8, White);
 
-	snprintf(buff, sizeof(buff), "Buttom:%d,%d,%d,%d", buttom_flag[1],
+	snprintf(buff, sizeof(buff), "Buttom[%d]:%d,%d,%d,%d",buttom_State, buttom_flag[1],
 			buttom_flag[2], buttom_flag[3], buttom_flag[4]);
-	ssd1306_SetCursor(2, 0 + 40);
+	ssd1306_SetCursor(2, 8*6);
 	ssd1306_WriteString(buff, Font_6x8, White);
 
-	snprintf(buff, sizeof(buff), "time:%d,%d", end, start);
-	ssd1306_SetCursor(2, 0 + 48);
-	ssd1306_WriteString(buff, Font_6x8, White);
+	//snprintf(buff, sizeof(buff), "time:%d,%d", end, start);
+	//ssd1306_SetCursor(2, 8*7);
+	//ssd1306_WriteString(buff, Font_6x8, White);
 	if (end > start) {
 		snprintf(buff, sizeof(buff), "time:%d", end - start);
-		ssd1306_SetCursor(2, 0 + 56);
+		ssd1306_SetCursor(2, 8*7);
 		ssd1306_WriteString(buff, Font_6x8, White);
 	}
 	ssd1306_UpdateScreen();
