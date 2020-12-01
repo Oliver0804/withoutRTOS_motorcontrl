@@ -70,6 +70,12 @@ uint32_t start = 0;
 uint32_t end = 0;
 
 int settingMode = 0;
+int pressTimer = 0;
+int nowPosition = 0;
+int stayPositionUp = 0;
+int stayPositionDown = 20;
+int slowValue = 5;
+int sensitivityValue = 50;
 
 int i;
 uint32_t ADC_Value[100];
@@ -82,6 +88,7 @@ uint32_t PWM1 = 0, PWM2 = 0;
 uint32_t OUTPUT_1_State = 0, OUTPUT_2_State = 0;
 uint32_t sysinfo_State = 0, button_State = 0;
 uint32_t dir_flag = 0;
+uint32_t setDir_flag = 0;
 
 int button_flag[5] = { 0 };
 
@@ -101,47 +108,214 @@ void SystemClock_Config(void);
 
 /* USER CODE BEGIN 0 */
 void motor_control(int dir, int pwm) {
-	if (dir >= 1) {
-		OUTPUT_1_State = 1;
-		OUTPUT_2_State = 0;
-		HAL_GPIO_WritePin(OUTPUT_M1_GPIO_Port, OUTPUT_M1_Pin, 1);
-		HAL_GPIO_WritePin(OUTPUT_M2_GPIO_Port, OUTPUT_M2_Pin, 0);
-		PWM1 = pwm;
-		PWM2 = 0;
-		user_pwm_setvalue_1(pwm);
-		user_pwm_setvalue_2(0);
+	if (setDir_flag >= 1) {
+		if (dir >= 1) {
+			OUTPUT_1_State = 1;
+			OUTPUT_2_State = 0;
+			HAL_GPIO_WritePin(OUTPUT_M1_GPIO_Port, OUTPUT_M1_Pin, 1);
+			HAL_GPIO_WritePin(OUTPUT_M2_GPIO_Port, OUTPUT_M2_Pin, 0);
+			PWM1 = pwm;
+			PWM2 = 0;
+			user_pwm_setvalue_1(pwm);
+			user_pwm_setvalue_2(0);
 
-	} else if (dir <= -1) {
-		OUTPUT_1_State = 0;
-		OUTPUT_2_State = 1;
-		HAL_GPIO_WritePin(OUTPUT_M1_GPIO_Port, OUTPUT_M1_Pin, 0);
-		HAL_GPIO_WritePin(OUTPUT_M2_GPIO_Port, OUTPUT_M2_Pin, 1);
-		PWM1 = 0;
-		PWM2 = pwm;
-		user_pwm_setvalue_1(0);
-		user_pwm_setvalue_2(pwm);
-	} else if (dir == 0) {
-		OUTPUT_1_State = 0;
-		OUTPUT_2_State = 0;
-		PWM1 = 0;
-		PWM2 = 0;
-		HAL_GPIO_WritePin(OUTPUT_M1_GPIO_Port, OUTPUT_M1_Pin, 0);
-		HAL_GPIO_WritePin(OUTPUT_M2_GPIO_Port, OUTPUT_M2_Pin, 0);
-		user_pwm_setvalue_1(0);
-		user_pwm_setvalue_2(0);
+		} else if (dir <= -1) {
+			OUTPUT_1_State = 0;
+			OUTPUT_2_State = 1;
+			HAL_GPIO_WritePin(OUTPUT_M1_GPIO_Port, OUTPUT_M1_Pin, 0);
+			HAL_GPIO_WritePin(OUTPUT_M2_GPIO_Port, OUTPUT_M2_Pin, 1);
+			PWM1 = 0;
+			PWM2 = pwm;
+			user_pwm_setvalue_1(0);
+			user_pwm_setvalue_2(pwm);
+		} else if (dir == 0) {
+			OUTPUT_1_State = 0;
+			OUTPUT_2_State = 0;
+			PWM1 = 0;
+			PWM2 = 0;
+			HAL_GPIO_WritePin(OUTPUT_M1_GPIO_Port, OUTPUT_M1_Pin, 0);
+			HAL_GPIO_WritePin(OUTPUT_M2_GPIO_Port, OUTPUT_M2_Pin, 0);
+			user_pwm_setvalue_1(0);
+			user_pwm_setvalue_2(0);
+		}
+	} else {
+		if (dir <= -1) {
+			OUTPUT_1_State = 1;
+			OUTPUT_2_State = 0;
+			HAL_GPIO_WritePin(OUTPUT_M1_GPIO_Port, OUTPUT_M1_Pin, 1);
+			HAL_GPIO_WritePin(OUTPUT_M2_GPIO_Port, OUTPUT_M2_Pin, 0);
+			PWM1 = pwm;
+			PWM2 = 0;
+			user_pwm_setvalue_1(pwm);
+			user_pwm_setvalue_2(0);
+
+		} else if (dir >= 1) {
+			OUTPUT_1_State = 0;
+			OUTPUT_2_State = 1;
+			HAL_GPIO_WritePin(OUTPUT_M1_GPIO_Port, OUTPUT_M1_Pin, 0);
+			HAL_GPIO_WritePin(OUTPUT_M2_GPIO_Port, OUTPUT_M2_Pin, 1);
+			PWM1 = 0;
+			PWM2 = pwm;
+			user_pwm_setvalue_1(0);
+			user_pwm_setvalue_2(pwm);
+		} else if (dir == 0) {
+			OUTPUT_1_State = 0;
+			OUTPUT_2_State = 0;
+			PWM1 = 0;
+			PWM2 = 0;
+			HAL_GPIO_WritePin(OUTPUT_M1_GPIO_Port, OUTPUT_M1_Pin, 0);
+			HAL_GPIO_WritePin(OUTPUT_M2_GPIO_Port, OUTPUT_M2_Pin, 0);
+			user_pwm_setvalue_1(0);
+			user_pwm_setvalue_2(0);
+		}
 	}
 }
-void motor_point(int pwm) {
+void motor_point(int time) {
 	HAL_GPIO_WritePin(OUTPUT_M1_GPIO_Port, OUTPUT_M1_Pin, 0);
 	HAL_GPIO_WritePin(OUTPUT_M2_GPIO_Port, OUTPUT_M2_Pin, 1);
 	PWM1 = 0;
-	PWM2 = pwm;
-	HAL_Delay(10);
+	PWM2 = 4000;
+	user_pwm_setvalue_1(PWM1);
+	user_pwm_setvalue_2(PWM2);
+	HAL_Delay(time);
 	HAL_GPIO_WritePin(OUTPUT_M1_GPIO_Port, OUTPUT_M1_Pin, 1);
 	HAL_GPIO_WritePin(OUTPUT_M2_GPIO_Port, OUTPUT_M2_Pin, 0);
-	PWM1 = pwm;
+	PWM1 = 4000;
 	PWM2 = 0;
-	HAL_Delay(10);
+	user_pwm_setvalue_1(PWM1);
+	user_pwm_setvalue_2(PWM2);
+	HAL_Delay(time);
+	HAL_GPIO_WritePin(OUTPUT_M1_GPIO_Port, OUTPUT_M1_Pin, 0);
+	HAL_GPIO_WritePin(OUTPUT_M2_GPIO_Port, OUTPUT_M2_Pin, 0);
+	PWM1 = 0;
+	PWM2 = 0;
+	user_pwm_setvalue_1(PWM1);
+	user_pwm_setvalue_2(PWM2);
+}
+void timerControl() {
+	if (start < end) {	//時間未結束
+		if (dir_flag == 1) {
+			if (start < end - 4000) {
+				stage = 1;
+				if (stage != last_stage) {
+					last_stage = stage;
+					detection_load(0, sensitivity);
+				}
+				if (detection_load(1, sensitivity)) {
+					sysinfo_State = 1;
+				}
+				motor_control(1, 1000);
+			} else if (start < end - 2000) {
+				stage = 2;
+				if (stage != last_stage) {
+					last_stage = stage;
+					detection_load(0, sensitivity);
+				}
+				if (detection_load(1, sensitivity)) {
+					sysinfo_State = 1;
+				}
+				motor_control(1, 4000);
+			} else if (start < end) {
+				stage = 3;
+				if (stage != last_stage) {
+					last_stage = stage;
+					detection_load(0, sensitivity);
+				}
+				if (detection_load(1, sensitivity)) {
+					sysinfo_State = 1;
+				}
+				motor_control(1, 1000);
+			}
+		} else if (dir_flag == 4) {
+			if (start < end - 4000) {
+				stage = 1;
+				if (stage != last_stage) {
+					last_stage = stage;
+					detection_load(0, sensitivity);
+				}
+				if (detection_load(1, sensitivity)) {
+					sysinfo_State = 1;
+				}
+				motor_control(-1, 1000);
+			} else if (start < end - 2000) {
+				stage = 2;
+				if (stage != last_stage) {
+					last_stage = stage;
+					detection_load(0, sensitivity);
+				}
+				if (detection_load(1, sensitivity)) {
+					sysinfo_State = 1;
+				}
+				motor_control(-1, 4000);
+			} else if (start < end) {
+				stage = 3;
+				if (stage != last_stage) {
+					last_stage = stage;
+					detection_load(0, sensitivity);
+				}
+				if (detection_load(1, sensitivity)) {
+					sysinfo_State = 1;
+				}
+				motor_control(-1, 1000);
+			}
+		}
+		if (sysinfo_State == 1)
+			end = start;	//壓力觸發
+	} else {	//運行時間結束
+		stage = 0;
+		sysinfo_State = 0;
+		detection_load(0, 50);
+		motor_control(0, 0);
+	}
+}
+void stepControl() {
+	switch (dir_flag) {
+	case 1:
+		while (nowPosition > stayPositionUp) {
+			motor_control(1, 4000);
+			HAL_Delay(20);
+			detection_load(0, sensitivity);
+			nowPosition--;
+			for (int timer = 0; timer < 5; timer++) {
+				HAL_Delay(1);
+				Display(settingMode);
+				if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_13) == GPIO_PIN_SET||detection_load(1, sensitivity)) {
+					dir_flag = 0;
+					break;
+				}
+			}
+			if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_13) == GPIO_PIN_SET||detection_load(1, sensitivity)) {
+				dir_flag = 0;
+				break;
+			}
+		}
+		motor_control(0, 0);
+		break;
+	case 4:
+		while (nowPosition < stayPositionDown) {
+			motor_control(-1, 4000);
+			HAL_Delay(20);
+			detection_load(0, sensitivity);
+			nowPosition++;
+			for (int timer = 0; timer < 5; timer++) {
+				HAL_Delay(1);
+				Display(settingMode);
+				if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_13) == GPIO_PIN_SET||detection_load(1, sensitivity)) {
+					dir_flag = 0;
+					break;
+				}
+			}
+			if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_13) == GPIO_PIN_SET||detection_load(1, sensitivity)) {
+				dir_flag = 0;
+				break;
+			}
+		}
+		motor_control(0, 0);
+		break;
+	default:
+		motor_control(0, 0);
+		break;
+	}
 }
 
 void clean_button_flag(void) {
@@ -152,7 +326,7 @@ void clean_button_flag(void) {
 	}
 }
 int read_ADC() {
-	int times = 50;
+	int times = 50; //採樣次數
 	for (i = 0, ad1 = 0, ad2 = 0; i < times;) {
 		ad1 += ADC_Value[i++];
 		ad2 += ADC_Value[i++];
@@ -171,17 +345,18 @@ int read_ADC() {
 //檢知附載
 //int time =0 ;為第一次設置
 int detection_load(int times, uint32_t th) {
+	int setCount = 3;
 	if (times == 0) {
 		//keep_adc1 = real_adc1;
 		maxLoad = 0;
 		maxLoadCount = 0;
 	} else {
 		maxLoadCount++;
-		if (maxLoadCount < 3) {
+		if (maxLoadCount < setCount) {
 			if (real_adc1 > maxLoad) {
-				maxLoad = real_adc1+th;
+				maxLoad = real_adc1 + th;
 			}
-		}else{
+		} else {
 			if (real_adc1 > (maxLoad)) {
 				//maxLoad = real_adc1;
 				return 1;
@@ -201,7 +376,8 @@ void Display(int mode) {
 		ssd1306_WriteString(buff, Font_6x8, White);
 
 		ssd1306_SetCursor(2, 8 * line_count++);
-		snprintf(buff, sizeof(buff), "steta:%d,%d", sysinfo_State, stage);
+		snprintf(buff, sizeof(buff), "state:%d,%d nowP:%d", sysinfo_State,
+				stage, nowPosition);
 		ssd1306_WriteString(buff, Font_6x8, White);
 
 		snprintf(buff, sizeof(buff), "[B0]:%d,KA1:%d", real_adc1, keep_adc1);
@@ -217,12 +393,9 @@ void Display(int mode) {
 		ssd1306_SetCursor(2, 8 * line_count++);
 		ssd1306_WriteString(buff, Font_6x8, White);
 
-
 		snprintf(buff, sizeof(buff), "PWM2:%d, GPIO2:%d", PWM2, OUTPUT_2_State);
 		ssd1306_SetCursor(2, 8 * line_count++);
 		ssd1306_WriteString(buff, Font_6x8, White);
-
-
 
 		snprintf(buff, sizeof(buff), "button[%d]:%d,%d,%d,%d", button_State,
 				button_flag[1], button_flag[2], button_flag[3], button_flag[4]);
@@ -238,15 +411,53 @@ void Display(int mode) {
 			ssd1306_WriteString(buff, Font_6x8, White);
 		}
 	} else if (mode == 1) {		//setting mode
-		snprintf(buff, sizeof(buff), "Setting mode.");
+		snprintf(buff, sizeof(buff), "Setting mode:%d", settingMode);
 		ssd1306_WriteString(buff, Font_6x8, White);
 
 		ssd1306_SetCursor(2, 8 * line_count++);
 		snprintf(buff, sizeof(buff), "button[%d]:%d,%d,%d,%d", button_State,
 				button_flag[1], button_flag[2], button_flag[3], button_flag[4]);
 		ssd1306_WriteString(buff, Font_6x8, White);
+		/*
+		 snprintf(buff, sizeof(buff), "[B0]:%d,KA1:%d", real_adc1, keep_adc1);
+		 ssd1306_SetCursor(2, 8 * line_count++);
+		 ssd1306_WriteString(buff, Font_6x8, White);
+		 */
+		snprintf(buff, sizeof(buff), "now:%d,up:%d,down:%d", nowPosition,
+				stayPositionUp, stayPositionDown);
+		ssd1306_SetCursor(2, 8 * line_count++);
+		ssd1306_WriteString(buff, Font_6x8, White);
 
-		snprintf(buff, sizeof(buff), "[B0]:%d,KA1:%d", real_adc1, keep_adc1);
+		snprintf(buff, sizeof(buff), "LongPress:%d", pressTimer);
+		ssd1306_SetCursor(2, 8 * line_count++);
+		ssd1306_WriteString(buff, Font_6x8, White);
+
+		snprintf(buff, sizeof(buff), "DIR:%d,nowP:%d", setDir_flag,
+				nowPosition);
+		ssd1306_SetCursor(2, 8 * line_count++);
+		ssd1306_WriteString(buff, Font_6x8, White);
+
+		snprintf(buff, sizeof(buff), "PWM1:%d, GPIO1:%d", PWM1, OUTPUT_1_State);
+		ssd1306_SetCursor(2, 8 * line_count++);
+		ssd1306_WriteString(buff, Font_6x8, White);
+
+		snprintf(buff, sizeof(buff), "PWM2:%d, GPIO2:%d", PWM2, OUTPUT_2_State);
+		ssd1306_SetCursor(2, 8 * line_count++);
+		ssd1306_WriteString(buff, Font_6x8, White);
+
+		if (end > start) {
+			snprintf(buff, sizeof(buff), "time:%d", end - start);
+			ssd1306_SetCursor(2, 8 * 7);
+			ssd1306_WriteString(buff, Font_6x8, White);
+		}
+
+	} else if (mode == 2) {		//setting mode
+		snprintf(buff, sizeof(buff), "s_Value:%d", sensitivityValue);
+		ssd1306_SetCursor(2, 8 * line_count++);
+		ssd1306_WriteString(buff, Font_6x8, White);
+
+	} else if (mode == 3) {		//setting mode
+		snprintf(buff, sizeof(buff), "slowValue:%dms", slowValue * 100);
 		ssd1306_SetCursor(2, 8 * line_count++);
 		ssd1306_WriteString(buff, Font_6x8, White);
 
@@ -295,10 +506,159 @@ int read_GPIO(int th) {
 		state = state + 4;
 	if (button_flag[4] >= th)
 		state = state + 8;
-
+	if (state == 0)
+		clean_button_flag();
 	return state;
 }
+int check_buttom() {
+	//讀取案就狀態
 
+	button_State = read_GPIO(1);
+	int exitSetTime = 8000;
+
+	if (settingMode == 0) {
+		if (button_State == 1) {
+			//正轉
+			end = start + runtime;
+			dir_flag = 1;
+		} else if (button_State == 4) {
+			//反轉
+			end = start + runtime;
+			dir_flag = 4;
+		} else if (button_State == 2) {
+			//停止
+			end = start;
+			motor_control(0, 0);
+		} else if (button_State == 5) {
+			//尚未定義 強制停止
+			end = start;
+			motor_control(0, 0);
+		} else if (button_State == 8) {
+			//進入設定模式
+			motor_control(0, 0);
+			end = start + exitSetTime;
+			motor_point(100);
+			settingMode = 1;
+		}
+	} else {
+
+		if (button_State > 0) {
+			end = start + exitSetTime;
+		}
+		if (button_State == 1) {//shrot press is move ,long press into set adc-power.
+			while (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_12) == GPIO_PIN_SET) {
+				pressTimer++;
+				Display(settingMode);
+			}
+			//pressTimer++;
+			if (pressTimer > 5) {
+				pressTimer = 0;
+				settingMode = 2;
+				while (settingMode == 2) {
+					Display(settingMode);
+					if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_12) == GPIO_PIN_SET) {
+						if (sensitivityValue <= 1000) {
+							sensitivityValue += 20;
+						} else {
+							sensitivityValue = 1000;
+						}
+					}
+					if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_13) == GPIO_PIN_SET) {
+						settingMode = 1;
+					}
+					if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_14) == GPIO_PIN_SET) {
+						if (sensitivityValue >= 20) {
+							sensitivityValue -= 20;
+						} else {
+							sensitivityValue = 0;
+						}
+					}
+					if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_15) == GPIO_PIN_SET) {
+						settingMode = 1;
+					}
+					HAL_Delay(250);
+				}
+			} else {
+				motor_control(1, 4000);
+				HAL_Delay(500);
+				motor_control(0, 0);
+				if (nowPosition >= 1000) {
+					nowPosition = 1000;
+				} else {
+					nowPosition++;
+				}
+
+			}
+
+		} else if (button_State == 4) {	//shrot press is move ,long press into set slow-val.
+			while (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_14) == GPIO_PIN_SET) {
+				pressTimer++;
+				Display(settingMode);
+			}
+			//pressTimer++;
+			if (pressTimer > 5) {
+				pressTimer = 0;
+				settingMode = 3;
+				while (settingMode == 3) {
+					Display(settingMode);
+					if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_12) == GPIO_PIN_SET) {
+						if (slowValue <= 100) {
+							slowValue += 1;
+						} else {
+							slowValue = 100;
+						}
+					}
+					if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_13) == GPIO_PIN_SET) {
+						settingMode = 1;
+					}
+					if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_14) == GPIO_PIN_SET) {
+						if (slowValue >= 1) {
+							slowValue -= 1;
+						} else {
+							slowValue = 0;
+						}
+					}
+					if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_15) == GPIO_PIN_SET) {
+						settingMode = 1;
+					}
+					HAL_Delay(250);
+				}
+			} else {
+				motor_control(-1, 4000);
+				HAL_Delay(500);
+				motor_control(0, 0);
+				if (nowPosition < 1) {
+					nowPosition = 0;
+				} else {
+					nowPosition--;
+				}
+			}
+		} else if (button_State == 2) {		//set favorite-point
+
+		} else if (button_State == 5) {		//change motor dir
+			settingMode = 1;
+			if (setDir_flag == 1) {
+				setDir_flag = 0;
+			} else {
+				setDir_flag = 1;
+			}
+			HAL_Delay(500);
+
+		} else if (button_State == 3) {		//set up-point
+			settingMode = 1;
+			stayPositionUp = nowPosition;
+
+		} else if (button_State == 6) {		//set donw-point
+			settingMode = 1;
+			stayPositionDown = nowPosition;
+
+		} else if (button_State == 8) {
+			settingMode = 1;
+		} else if (button_State == 0) {
+			pressTimer = 0;
+		}
+	}
+}
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	/*
 	 switch (GPIO_Pin) {
@@ -372,109 +732,25 @@ int main(void) {
 		/* USER CODE BEGIN 3 */
 		//系統運行時間
 		start = HAL_GetTick();
-		if (start < end) {	//時間未結束
-			if (dir_flag == 1) {
-				if (start < end - 4000) {
-					stage = 1;
-					if (stage != last_stage) {
-						last_stage = stage;
-						detection_load(0, sensitivity);
-					}
-					if (detection_load(1, sensitivity)) {
-						sysinfo_State = 1;
-					}
-					motor_control(1, 1000);
-				} else if (start < end - 2000) {
-					stage = 2;
-					if (stage != last_stage) {
-						last_stage = stage;
-						detection_load(0, sensitivity);
-					}
-					if (detection_load(1, sensitivity)) {
-						sysinfo_State = 1;
-					}
-					motor_control(1, 4000);
-				} else if (start < end) {
-					stage = 3;
-					if (stage != last_stage) {
-						last_stage = stage;
-						detection_load(0, sensitivity);
-					}
-					if (detection_load(1, sensitivity)) {
-						sysinfo_State = 1;
-					}
-					motor_control(1, 1000);
-				}
-			} else if (dir_flag == 4) {
-				if (start < end - 4000) {
-					stage = 1;
-					if (stage != last_stage) {
-						last_stage = stage;
-						detection_load(0, sensitivity);
-					}
-					if (detection_load(1, sensitivity)) {
-						sysinfo_State = 1;
-					}
-					motor_control(-1, 1000);
-				} else if (start < end - 2000) {
-					stage = 2;
-					if (stage != last_stage) {
-						last_stage = stage;
-						detection_load(0, sensitivity);
-					}
-					if (detection_load(1, sensitivity)) {
-						sysinfo_State = 1;
-					}
-					motor_control(-1, 4000);
-				} else if (start < end) {
-					stage = 3;
-					if (stage != last_stage) {
-						last_stage = stage;
-						detection_load(0, sensitivity);
-					}
-					if (detection_load(1, sensitivity)) {
-						sysinfo_State = 1;
-					}
-					motor_control(-1, 1000);
-				}
-			}
-			if (sysinfo_State == 1)
-				end = start;	//壓力觸發
-		} else {	//時間結束
-			stage = 0;
-			sysinfo_State = 0;
-			detection_load(0, 50);
-			motor_control(0, 0);
-		}
+		if (settingMode == 0) {	//運行模式
+			//timerControl();
+			stepControl();
+		} else {	//設定模式
+			if (start < end) {	//時間未結束
 
+			} else {
+				settingMode = 0;
+			}
+		}
 		//壓力觸動時輸出1
 		//sysinfo_State = read_ADC();
 		read_ADC();
 
-		//讀取案就狀態
-		button_State = read_GPIO(1);
-		if (button_State == 1) {
-			end = start + runtime;
-			dir_flag = 1;
-		} else if (button_State == 4) {
-			end = start + runtime;
-			dir_flag = 4;
-		} else if (button_State == 2) {
-			end = start;
-			motor_control(0, 0);
-		} else if (button_State == 5) {
-			motor_point(4000);
-			settingMode = 1;
-		} else if (button_State == 8) {
-			settingMode = 0;
-		}
+		check_buttom();
 
 		//LCD畫面
 		if (i2c_working == 1)
 			Display(settingMode);
-		if (settingMode == 1) {
-
-		}
 
 		//系統LED PC13
 		//HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
