@@ -61,7 +61,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 uint32_t runtime = 6000;
-uint32_t sensitivity = 20;
+uint32_t sensitivity = 50;
 
 //uint32_t timecount=0;
 uint32_t stage = 0;
@@ -274,6 +274,7 @@ void stepControl() {
 		while (nowPosition > stayPositionUp) {
 			motor_control(1, 4000);
 			HAL_Delay(20);
+			//read_ADC();
 			detection_load(0, sensitivity);
 			nowPosition--;
 			for (int timer = 0; timer < 5; timer++) {
@@ -295,6 +296,7 @@ void stepControl() {
 		while (nowPosition < stayPositionDown) {
 			motor_control(-1, 4000);
 			HAL_Delay(20);
+			//read_ADC();
 			detection_load(0, sensitivity);
 			nowPosition++;
 			for (int timer = 0; timer < 5; timer++) {
@@ -313,7 +315,7 @@ void stepControl() {
 		motor_control(0, 0);
 		break;
 	default:
-		motor_control(0, 0);
+		//motor_control(0, 0);
 		break;
 	}
 }
@@ -345,6 +347,7 @@ int read_ADC() {
 //檢知附載
 //int time =0 ;為第一次設置
 int detection_load(int times, uint32_t th) {
+	read_ADC();
 	int setCount = 3;
 	if (times == 0) {
 		//keep_adc1 = real_adc1;
@@ -380,7 +383,7 @@ void Display(int mode) {
 				stage, nowPosition);
 		ssd1306_WriteString(buff, Font_6x8, White);
 
-		snprintf(buff, sizeof(buff), "[B0]:%d,KA1:%d", real_adc1, keep_adc1);
+		snprintf(buff, sizeof(buff), "[B0]:%d,Sent:%d", real_adc1, sensitivity);
 		ssd1306_SetCursor(2, 8 * line_count++);
 		ssd1306_WriteString(buff, Font_6x8, White);
 
@@ -565,6 +568,7 @@ int check_buttom() {
 					}
 					if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_13) == GPIO_PIN_SET) {
 						settingMode = 1;
+						sensitivity=sensitivityValue;
 					}
 					if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_14) == GPIO_PIN_SET) {
 						if (sensitivityValue >= 20) {
