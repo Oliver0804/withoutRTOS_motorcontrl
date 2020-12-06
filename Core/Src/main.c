@@ -365,6 +365,7 @@ void stepControl() {
 			}
 		}
 		motor_stop(1);
+		dir_flag=0;
 		break;
 	case 4:
 		if (nowPosition < stayPositionDown) {
@@ -393,6 +394,7 @@ void stepControl() {
 			}
 		}
 		motor_stop(-1);
+		dir_flag=0;
 		break;
 	default:
 		//motor_control(0, 0);
