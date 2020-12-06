@@ -71,6 +71,10 @@
 #define OUTPUT_M1_GPIO_Port GPIOA
 #define OUTPUT_M2_Pin GPIO_PIN_9
 #define OUTPUT_M2_GPIO_Port GPIOA
+#define OUTPUT_BUZZER_Pin GPIO_PIN_10
+#define OUTPUT_BUZZER_GPIO_Port GPIOA
+#define OUTPUT_REMOTE_Pin GPIO_PIN_11
+#define OUTPUT_REMOTE_GPIO_Port GPIOA
 
 /* ########################## Assert Selection ############################## */
 /**
