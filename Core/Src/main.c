@@ -136,7 +136,7 @@ void motor_stop(int dir) {
 		user_pwm_setvalue_2(4000);
 	}
 	HAL_Delay(100);
-	motor_control(0,0);
+	motor_control(0, 0);
 }
 void motor_control(int dir, int pwm) {
 	if (setDir_flag >= 1) {
@@ -341,7 +341,15 @@ void stepControl() {
 	case 1:
 		if (nowPosition > stayPositionUp) {
 			motor_control(1, 1500);
-			HAL_Delay(slowValue * 100);
+			for (int x = 0; x < slowValue; x++) {
+				HAL_Delay(100);
+				if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_13) == GPIO_PIN_SET
+						|| detection_load(1, sensitivity)) {
+					dir_flag = 0;
+					break;
+				}
+			}
+
 		}
 		while (nowPosition > stayPositionUp) {
 			motor_control(1, 4000);
@@ -365,12 +373,19 @@ void stepControl() {
 			}
 		}
 		motor_stop(1);
-		dir_flag=0;
+		dir_flag = 0;
 		break;
 	case 4:
 		if (nowPosition < stayPositionDown) {
 			motor_control(-1, 1500);
-			HAL_Delay(slowValue * 100);
+			for (int x = 0; x < slowValue; x++) {
+				HAL_Delay(100);
+				if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_13) == GPIO_PIN_SET
+						|| detection_load(1, sensitivity)) {
+					dir_flag = 0;
+					break;
+				}
+			}
 		}
 		while (nowPosition < stayPositionDown) {
 			motor_control(-1, 4000);
@@ -394,7 +409,7 @@ void stepControl() {
 			}
 		}
 		motor_stop(-1);
-		dir_flag=0;
+		dir_flag = 0;
 		break;
 	default:
 		//motor_control(0, 0);
@@ -649,7 +664,7 @@ int check_buttom() {
 				Display(settingMode);
 			}
 			//pressTimer++;
-			if (pressTimer > 5) {
+			if (pressTimer > 8) {
 				pressTimer = 0;
 				settingMode = 2;
 				while (settingMode == 2) {
@@ -697,7 +712,7 @@ int check_buttom() {
 				Display(settingMode);
 			}
 			//pressTimer++;
-			if (pressTimer > 5) {
+			if (pressTimer > 8) {
 				pressTimer = 0;
 				settingMode = 3;
 				while (settingMode == 3) {
