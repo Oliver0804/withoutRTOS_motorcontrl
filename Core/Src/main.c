@@ -337,6 +337,7 @@ void timerControl() {
 	}
 }
 void stepControl() {
+	int stopFlag=0;
 	switch (dir_flag) {
 	case 1:
 		if (nowPosition > stayPositionUp) {
@@ -346,12 +347,14 @@ void stepControl() {
 				if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_13) == GPIO_PIN_SET
 						|| detection_load(1, sensitivity)) {
 					dir_flag = 0;
+					stopFlag=1;
 					break;
 				}
 			}
 
 		}
 		while (nowPosition > stayPositionUp) {
+			if(stopFlag==1)break;
 			motor_control(1, 4000);
 			HAL_Delay(20);
 			//read_ADC();
@@ -363,12 +366,14 @@ void stepControl() {
 				if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_13) == GPIO_PIN_SET
 						|| detection_load(1, sensitivity)) {
 					dir_flag = 0;
+					stopFlag=1;
 					break;
 				}
 			}
 			if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_13) == GPIO_PIN_SET
 					|| detection_load(1, sensitivity)) {
 				dir_flag = 0;
+				stopFlag=1;
 				break;
 			}
 		}
@@ -383,11 +388,13 @@ void stepControl() {
 				if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_13) == GPIO_PIN_SET
 						|| detection_load(1, sensitivity)) {
 					dir_flag = 0;
+					stopFlag=1;
 					break;
 				}
 			}
 		}
 		while (nowPosition < stayPositionDown) {
+			if(stopFlag==1)break;
 			motor_control(-1, 4000);
 			HAL_Delay(20);
 			//read_ADC();
@@ -399,12 +406,14 @@ void stepControl() {
 				if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_13) == GPIO_PIN_SET
 						|| detection_load(1, sensitivity)) {
 					dir_flag = 0;
+					stopFlag=1;
 					break;
 				}
 			}
 			if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_13) == GPIO_PIN_SET
 					|| detection_load(1, sensitivity)) {
 				dir_flag = 0;
+				stopFlag=1;
 				break;
 			}
 		}
