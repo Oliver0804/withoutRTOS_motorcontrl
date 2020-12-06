@@ -52,7 +52,10 @@
 #include "stdio.h"
 #include <string.h>
 #include <stdio.h>
+
 #include "./ssd1306/ssd1306_tests.h"
+
+#include "./FLASH_PAGE/FLASH_PAGE.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -96,6 +99,11 @@ char buff[64];
 
 int i2c_working = 1;
 
+
+uint32_t *data = (uint32_t *)"Hello World";
+uint32_t Rx_Data[4];
+char string[30];
+char tempString[30];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -170,6 +178,40 @@ void motor_control(int dir, int pwm) {
 		}
 	}
 }
+
+void WriteSet(int dataInt1,int dataInt2,int dataInt3,int dataInt4,int dataInt5,int dataInt6){
+	//sprintf(*tempString,"%s%s%s%s%s",dataInt1,dataInt2,dataInt3,dataInt4,dataInt5);
+	sprintf(tempString,"%4d%4d%4d%4d%4d%4d",dataInt1,dataInt2,dataInt3,dataInt4,dataInt5,dataInt6);
+	Flash_Write_Data(0x0801FBF8 , tempString);
+}
+void KeepSet(){
+	WriteSet(nowPosition,stayPositionUp,stayPositionDown,sensitivity,slowValue,setDir_flag);
+}
+void ReadSet(){
+	Flash_Read_Data(0x0801FBF8, Rx_Data);
+	Convert_To_Str(Rx_Data, string);
+	int xx[6]={0};
+	int xflag=0;
+	for(int x=0;x<23;x=x+4){
+		char temp[5];
+		temp[0]=string[x];
+		temp[1]=string[x+1];
+		temp[2]=string[x+2];
+		temp[3]=string[x+3];
+		temp[4]='\0';
+
+		xx[xflag++]=atoi(temp);
+		HAL_Delay(1);
+	}
+	nowPosition=xx[0];
+	stayPositionUp=xx[1];
+	stayPositionDown=xx[2];
+	sensitivity=xx[3];
+	slowValue=xx[4];
+	setDir_flag=xx[5];
+	//Convert_To_Str(Rx_Data, string);
+}
+
 void motor_point(int time) {
 	HAL_GPIO_WritePin(OUTPUT_M1_GPIO_Port, OUTPUT_M1_Pin, 0);
 	HAL_GPIO_WritePin(OUTPUT_M2_GPIO_Port, OUTPUT_M2_Pin, 1);
@@ -271,6 +313,10 @@ void timerControl() {
 void stepControl() {
 	switch (dir_flag) {
 	case 1:
+		if(nowPosition > stayPositionUp){
+			motor_control(1, 1500);
+			HAL_Delay(slowValue*100);
+		}
 		while (nowPosition > stayPositionUp) {
 			motor_control(1, 4000);
 			HAL_Delay(20);
@@ -293,6 +339,10 @@ void stepControl() {
 		motor_control(0, 0);
 		break;
 	case 4:
+		if(nowPosition < stayPositionDown){
+			motor_control(-1, 1500);
+			HAL_Delay(slowValue*100);
+		}
 		while (nowPosition < stayPositionDown) {
 			motor_control(-1, 4000);
 			HAL_Delay(20);
@@ -374,6 +424,8 @@ void Display(int mode) {
 	ssd1306_SetCursor(2, 0);
 	int line_count = 1;
 	if (mode == 0) {
+		//snprintf(buff, sizeof(buff), "%s,", string);
+		//ssd1306_WriteString(buff, Font_6x8, White);
 
 		snprintf(buff, sizeof(buff), "%s,%s", __DATE__, __TIME__);
 		ssd1306_WriteString(buff, Font_6x8, White);
@@ -490,6 +542,7 @@ int read_GPIO(int th) {
 	int state = 0;
 	if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_12) == GPIO_PIN_SET) {
 		button_flag[1]++;
+		//Flash_Write_Data(0x0801FBF8 , "A");
 	}
 	if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_13) == GPIO_PIN_SET) {
 		button_flag[2]++;
@@ -499,6 +552,7 @@ int read_GPIO(int th) {
 	}
 	if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_15) == GPIO_PIN_SET) {
 		button_flag[4]++;
+		//Flash_Write_Data(0x0801FBF8 , "D");
 	}
 
 	if (button_flag[1] >= th)
@@ -569,6 +623,7 @@ int check_buttom() {
 					if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_13) == GPIO_PIN_SET) {
 						settingMode = 1;
 						sensitivity=sensitivityValue;
+						KeepSet();
 					}
 					if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_14) == GPIO_PIN_SET) {
 						if (sensitivityValue >= 20) {
@@ -614,6 +669,7 @@ int check_buttom() {
 					}
 					if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_13) == GPIO_PIN_SET) {
 						settingMode = 1;
+						KeepSet();
 					}
 					if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_14) == GPIO_PIN_SET) {
 						if (slowValue >= 1) {
@@ -640,18 +696,20 @@ int check_buttom() {
 		} else if (button_State == 2) {		//set favorite-point
 
 		} else if (button_State == 5) {		//change motor dir
+			ReadSet();
 			settingMode = 1;
 			if (setDir_flag == 1) {
 				setDir_flag = 0;
 			} else {
 				setDir_flag = 1;
 			}
+			KeepSet();
 			HAL_Delay(500);
 
 		} else if (button_State == 3) {		//set up-point
 			settingMode = 1;
 			stayPositionUp = nowPosition;
-
+			KeepSet();
 		} else if (button_State == 6) {		//set donw-point
 			settingMode = 1;
 			stayPositionDown = nowPosition;
@@ -726,6 +784,22 @@ int main(void) {
 	motor_control(0, 0);
 	//ssd1306_TestLine();
 	//ssd1306_TestAll();
+
+	//nowp,UP,Down,sensitivity,SlowTime
+	//Flash_Write_Data(0x0801FBF8 , "0000,0000,0000,0000,0000");
+	//Flash_Read_Data(0x0801FBF8, Rx_Data);
+	/*
+	1.nowPosition
+	2.stayPositionUp
+	3.stayPositionDown
+	4.sensitivity
+	5.slowValue
+	6.dir_flag
+
+	*/
+	//WriteSet(5,1,20,100,5,1);
+	ReadSet();
+
 	/* USER CODE END 2 */
 
 	/* Infinite loop */

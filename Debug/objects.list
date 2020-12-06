@@ -1,3 +1,4 @@
+"Core/Src/FLASH_PAGE/FlASH_PAGE.o"
 "Core/Src/adc.o"
 "Core/Src/dma.o"
 "Core/Src/gpio.o"

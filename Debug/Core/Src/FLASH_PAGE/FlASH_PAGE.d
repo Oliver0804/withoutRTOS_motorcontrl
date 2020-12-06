@@ -1,4 +1,5 @@
-Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
+Core/Src/FLASH_PAGE/FlASH_PAGE.o: ../Core/Src/FLASH_PAGE/FlASH_PAGE.c \
+ ../Core/Src/FLASH_PAGE/FLASH_PAGE.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h \
  ../Core/Inc/stm32f1xx_hal_conf.h ../Core/Inc/main.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h \
@@ -26,15 +27,9 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rtc_ex.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h \
- ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h \
- ../Core/Inc/adc.h ../Core/Inc/dma.h ../Core/Inc/i2c.h ../Core/Inc/rtc.h \
- ../Core/Inc/tim.h ../Core/Inc/usart.h ../Core/Inc/gpio.h \
- ../Core/Src/./ssd1306/ssd1306.h ../Core/Src/./ssd1306/ssd1306_conf.h \
- ../Core/Src/./ssd1306/ssd1306_fonts.h \
- ../Core/Src/./ssd1306/ssd1306_tests.h \
- ../Core/Src/./FLASH_PAGE/FLASH_PAGE.h
+ ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
 
-../Core/Inc/main.h:
+../Core/Src/FLASH_PAGE/FLASH_PAGE.h:
 
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h:
 
@@ -93,27 +88,3 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h:
 
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h:
-
-../Core/Inc/adc.h:
-
-../Core/Inc/dma.h:
-
-../Core/Inc/i2c.h:
-
-../Core/Inc/rtc.h:
-
-../Core/Inc/tim.h:
-
-../Core/Inc/usart.h:
-
-../Core/Inc/gpio.h:
-
-../Core/Src/./ssd1306/ssd1306.h:
-
-../Core/Src/./ssd1306/ssd1306_conf.h:
-
-../Core/Src/./ssd1306/ssd1306_fonts.h:
-
-../Core/Src/./ssd1306/ssd1306_tests.h:
-
-../Core/Src/./FLASH_PAGE/FLASH_PAGE.h:

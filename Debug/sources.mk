@@ -19,6 +19,7 @@ OBJCOPY_BIN :=
 
 # Every subdirectory with source files must be described here
 SUBDIRS := \
+Core/Src/FLASH_PAGE \
 Core/Src \
 Core/Src/ssd1306 \
 Core/Startup \
